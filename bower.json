@@ -1,0 +1,11 @@
+{
+	"name": "ingot-hub",
+	"private": true,
+	"dependencies": {
+		"swagger-ui": ""
+	},
+	"ignore": [
+		"**/.*",
+		"public/lib"
+	]
+}

@@ -1,0 +1,33 @@
+{
+	"name": "ingot-hub",
+	"description": "The central hub for the Ingot automation platform",
+	"keywords": [
+		"ingot"
+	],
+	"version": "0.1.0",
+	"author": {
+		"name": "Appcelerator, Inc.",
+		"email": "npmjs@appcelerator.com"
+	},
+	"maintainers": [
+		{"name": "Chris Barber", "email": "cbarber@appcelerator.com"}
+	],
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/appcelerator/ingot-hub.git"
+	},
+	"dependencies": {
+		"async": "~0.9.0",
+		"bower": "~1.3.5",
+		"express": "~4.4.2",
+		"node-appc": "~0.2.10",
+		"sequelize": "~1.7.8",
+		"sqlite3": "~2.2.3",
+		"swagger-node-express": "~2.0.3"
+	},
+	"license": "Apache Public License v2",
+	"main": "./index",
+	"engines": {
+		"node": ">=0.8"
+	}
+}
