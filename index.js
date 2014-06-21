@@ -1,4 +1,6 @@
 var appc = require('node-appc'),
+	async = require('async'),
+	bower = require('bower'),
 	express = require('express'),
 	fs = require('fs'),
 	path = require('path'),
@@ -16,52 +18,59 @@ exports.dependencies = [ 'ingot-web-server' ];
  * @param {Object} [cfg] - Configuration object
  * @param {Function} [callback] - A function to call after the hub has been initialized
  */
-exports.load = function load(cfg, callback) {
+exports.load = function load(deps, cfg, callback) {
 	cfg || (cfg = {});
 
-	var db = cfg.hub && cfg.hub.db || {};
+	async.parallel({
+		db: function (next) {
+			var db = cfg.hub && cfg.hub.db || {};
 
-	if (['mysql', 'postgres', 'mariadb'].indexOf(db.dialect) === -1) {
-		db.dialect = 'sqlite';
-	}
-
-	switch (db.dialect) {
-		case 'sqlite':
-			if (!db.storage) {
-				db.storage = '~/.appcelerator/ingot-hub.sqlite';
+			if (['mysql', 'postgres', 'mariadb'].indexOf(db.dialect) === -1) {
+				db.dialect = 'sqlite';
 			}
-			db.storage = appc.fs.resolvePath(db.storage);
-			break;
 
-		default: // mariadb, mysql, postgres
-			db.host || (db.host = 'localhost');
-			db.port || (db.port = 3306);
-			db.username || (db.username = null);
-			db.password || (db.password = null);
-	}
+			switch (db.dialect) {
+				case 'sqlite':
+					if (!db.storage) {
+						db.storage = '~/.appcelerator/ingot-hub.sqlite';
+					}
+					db.storage = appc.fs.resolvePath(db.storage);
+					break;
 
-	function logger() {
-		var args = ['hub: sequelize:'].concat(Array.prototype.slice.call(arguments));
-		console.info.apply(null, args);
-	}
-	db.logging = logger;
+				default: // mariadb, mysql, postgres
+					db.host || (db.host = 'localhost');
+					db.port || (db.port = 3306);
+					db.username || (db.username = null);
+					db.password || (db.password = null);
+			}
 
-	// connect to the database
-	console.info('hub: connecting to %s (%s)', db.dialect, db.dialect === 'sqlite' ? db.storage : (db.host + ':' + db.port));
-	sequelize = new Sequelize('ingot-hub', db.username, db.password, db);
+			function logger() {
+				var args = ['hub: sequelize:'].concat(Array.prototype.slice.call(arguments));
+				console.info.apply(null, args);
+			}
+			db.logging = logger;
 
-	// initialize the database
-	var migrator = sequelize.getMigrator({
-		logging: logger,
-		path: path.join(__dirname, 'db', 'migrations')
-	});
+			// connect to the database
+			console.info('hub: connecting to %s (%s)', db.dialect, db.dialect === 'sqlite' ? db.storage : (db.host + ':' + db.port));
+			sequelize = new Sequelize('ingot-hub', db.username, db.password, db);
 
-	migrator.migrate().success(function () {
-		sequelize.query('SELECT * FROM sqlite_master').success(function(myTableRows) {
-			console.log(myTableRows);
-			typeof callback === 'function' && callback();
-		});
-	});
+			// initialize the database
+			var migrator = sequelize.getMigrator({
+				logging: logger,
+				path: path.join(__dirname, 'db', 'migrations')
+			});
+
+			migrator.migrate().success(next).error(next);
+		},
+
+		bower: function (next) {
+			console.info('hub: installing bower components');
+			bower.commands.install([], {}, {
+				cwd: __dirname,
+				directory: 'public/lib'
+			}).on('error', next).on('end', function () { next(); });
+		}
+	}, callback);
 };
 
 /**
