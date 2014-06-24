@@ -1,5 +1,9 @@
+var JobMeta;
+
 module.exports = function (sequelize, DataTypes) {
-	return sequelize.define('job_meta', {
+	if (JobMeta) return JobMeta;
+
+	JobMeta = sequelize.define('job_meta', {
 		id: {
 			type: DataTypes.INTEGER,
 			primaryKey: true,
@@ -26,4 +30,8 @@ module.exports = function (sequelize, DataTypes) {
 		createdAt: false,
 		updatedAt: false
 	});
+
+	JobMeta.belongsTo(require('./job')(sequelize, DataTypes));
+
+	return JobMeta;
 };

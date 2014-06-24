@@ -20,6 +20,7 @@ exports.spec = {
 
 exports.action = function action(models) {
 	var JobModel = models.job,
+		JobMetaModel = models.job_meta,
 		SpokeModel = models.spoke,
 		sequelize = SpokeModel.sequelize;
 
@@ -86,9 +87,32 @@ exports.action = function action(models) {
 						var job = jobs[0];
 						job.state = 1;
 						job.spoke_id = spoke.id;
+
 						job.save({ transaction: t }).success(function () {
 							t.commit().success(function () {
-								res.send(200, JSON.stringify({ success: true, result: job }));
+								JobMetaModel.findAll({ where: { job_id: job.id } }).success(function (_meta) {
+									var meta = {};
+
+									_meta.forEach(function (m) {
+										if (meta.hasOwnProperty(m.key)) {
+											if (!Array.isArray(meta[m.key])) {
+												meta[m.key] = [ meta[m.key] ];
+											}
+											meta[m.key].push(m.value);
+										} else {
+											meta[m.key] = m.value;
+										}
+									});
+
+									// hack
+									job.dataValues.meta = meta;
+
+									job.dataValues.payload = JSON.parse(job.dataValues.payload);
+
+									res.send(200, JSON.stringify({ success: true, result: job }));
+								}).error(function (err) {
+									res.send(400, JSON.stringify({ success: false, error: err }));
+								});
 							}).error(function (err) {
 								res.send(400, JSON.stringify({ success: false, error: err }));
 							});

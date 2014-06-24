@@ -1,5 +1,9 @@
+var Job;
+
 module.exports = function (sequelize, DataTypes) {
-	var Job = sequelize.define('job', {
+	if (Job) return Job;
+
+	Job = sequelize.define('job', {
 		id: {
 			type: DataTypes.INTEGER,
 			primaryKey: true,
@@ -17,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
 			type: DataTypes.STRING(32)
 		},
 
-		// current state: 0 (queued), 1 (running), 2 (completed), 3 (failed)
+		// current state: 0 (queued), 1 (running), 2 (succeeded), 3 (failed)
 		state: {
 			type: DataTypes.INTEGER,
 			defaultValue: 0
@@ -30,6 +34,11 @@ module.exports = function (sequelize, DataTypes) {
 
 		// a blob, usually a serialized JSON object
 		payload: {
+			type: DataTypes.TEXT
+		},
+
+		// the json result from the job
+		result: {
 			type: DataTypes.TEXT
 		}
 	});

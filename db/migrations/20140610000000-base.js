@@ -42,6 +42,11 @@ exports.up = function(migration, DataTypes, done) {
 						type: DataTypes.TEXT
 					},
 
+					// the json result from the job
+					result: {
+						type: DataTypes.TEXT
+					},
+
 					// timestamp of when the job was created
 					createdAt: {
 						type: DataTypes.DATE,
