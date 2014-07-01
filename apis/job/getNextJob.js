@@ -1,21 +1,33 @@
 var swagger = require('swagger-node-express'),
 	swe = swagger.errors;
 
+function formParam(name, desc, type, defaultValue, required) {
+	return {
+		'name': name,
+		'description': desc,
+		'type': type,
+		'required': !!required,
+		'paramType': 'form',
+		'defaultValue': defaultValue
+	};
+}
+
 exports.spec = {
 	description: 'Gets a job from the job queue',
-	path: '/job',
-	method: 'GET',
+	path: '/get-next-job',
+	method: 'POST',
 	summary: 'Gets a job from the job queue',
 	notes: 'Gets a job from the job queue',
 	type: 'Job',
 	parameters: [
-		swagger.queryParam('machineId', 'A token that is machine specific that is passed with each request.', 'string', true),
-		swagger.queryParam('types', 'A comma-separated list of supported job types that are used to determine the job to return.', 'string')
+		swagger.queryParam('machineId', 'A token that is machine specific that is passed with each request', 'string', true),
+		formParam('types', 'A comma-separated list of supported job types that are used to determine the job to return', 'string'),
+		formParam('capabilities', 'A serialized JSON array of platform objects', 'string')
 	],
 	responseMessages: [
 		swe.invalid('input')
 	],
-	nickname: 'getJob'
+	nickname: 'getNextJob'
 };
 
 exports.action = function action(models) {
@@ -36,13 +48,25 @@ exports.action = function action(models) {
 				return;
 			}
 
-			var capabilities = JSON.parse(spoke.capabilities),
+			var body = req.body,
+				capabilities,
 				osList = [],
 				platformList = [],
 				sql = [],
 				escapeQuotes = function escapeQuotes(s) {
 					return String(s).replace(/'/g, "''");
 				};
+
+			try {
+				// make sure the 'capabilities' is valid JSON
+				capabilities = body.capabilities ? JSON.parse(body.capabilities) : []
+			} catch (ex) {
+				res.send(400, JSON.stringify({ success: false, error: 'Invalid "capabilities" param: ' + ex.toString() }));
+			}
+
+			if (!Array.isArray(capabilities)) {
+				capabilities = [ capabilities ];
+			}
 
 			capabilities.forEach(function (platform) {
 				// get the os name

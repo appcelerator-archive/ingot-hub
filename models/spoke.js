@@ -24,11 +24,6 @@ module.exports = function (sequelize, DataTypes) {
 		// the spoke version
 		version: {
 			type: DataTypes.STRING(32)
-		},
-
-		// a serialized JSON array of capabilities
-		capabilities: {
-			type: DataTypes.TEXT
 		}
 	});
 };

@@ -13,6 +13,11 @@ exports.up = function(migration, DataTypes, done) {
 						autoIncrement: true
 					},
 
+					// unique identifier
+					parent_id: {
+						type: DataTypes.INTEGER
+					},
+
 					// priority of job: <0 low, >0 high
 					priority: {
 						type: DataTypes.INTEGER,
@@ -76,7 +81,7 @@ exports.up = function(migration, DataTypes, done) {
 					// the job id
 					job_id: {
 						type: DataTypes.INTEGER,
-						defaultValue: 0
+						allowNull: false
 					},
 
 					// the key
@@ -88,6 +93,42 @@ exports.up = function(migration, DataTypes, done) {
 					// the value
 					value: {
 						type: DataTypes.STRING(8000)
+					}
+				}
+			).complete(next).error(next);
+		},
+
+		function (next) {
+			migration.createTable(
+				'job_log',
+				{
+					// unique identifier
+					id: {
+						type: DataTypes.INTEGER,
+						primaryKey: true,
+						autoIncrement: true
+					},
+
+					// the job id
+					job_id: {
+						type: DataTypes.INTEGER,
+						allowNull: false
+					},
+
+					// the type of log message
+					type: {
+						type: DataTypes.STRING(32)
+					},
+
+					// the log message
+					message: {
+						type: DataTypes.STRING(8000)
+					},
+
+					// timestamp of when the log entry was created
+					createdAt: {
+						type: DataTypes.DATE,
+						allowNull: false
 					}
 				}
 			).complete(next).error(next);
@@ -124,12 +165,6 @@ exports.up = function(migration, DataTypes, done) {
 					// the spoke version
 					version: {
 						type: DataTypes.STRING(32),
-						allowNull: false
-					},
-
-					// a serialized JSON array of spoke capabilities
-					capabilities: {
-						type: DataTypes.TEXT,
 						allowNull: false
 					},
 

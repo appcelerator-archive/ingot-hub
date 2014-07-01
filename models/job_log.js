@@ -1,9 +1,9 @@
-var JobMeta;
+var JobLog;
 
 module.exports = function (sequelize, DataTypes) {
-	if (JobMeta) return JobMeta;
+	if (JobLog) return JobLog;
 
-	JobMeta = sequelize.define('job_meta', {
+	JobLog = sequelize.define('job_log', {
 		id: {
 			type: DataTypes.INTEGER,
 			primaryKey: true,
@@ -15,13 +15,13 @@ module.exports = function (sequelize, DataTypes) {
 			type: DataTypes.INTEGER
 		},
 
-		// the key
-		key: {
-			type: DataTypes.STRING(64)
+		// the type of log message
+		type: {
+			type: DataTypes.STRING(32)
 		},
 
-		// the value
-		value: {
+		// the log message
+		message: {
 			type: DataTypes.STRING(8000)
 		}
 	}, {
@@ -30,7 +30,7 @@ module.exports = function (sequelize, DataTypes) {
 		updatedAt: false
 	});
 
-	JobMeta.belongsTo(require('./job')(sequelize, DataTypes));
+	JobLog.belongsTo(require('./job')(sequelize, DataTypes));
 
-	return JobMeta;
+	return JobLog;
 };

@@ -10,6 +10,10 @@ module.exports = function (sequelize, DataTypes) {
 			autoIncrement: true
 		},
 
+		parent_id: {
+			type: DataTypes.INTEGER
+		},
+
 		// priority of job: <0 low, >0 high
 		priority: {
 			type: DataTypes.INTEGER,
@@ -44,6 +48,7 @@ module.exports = function (sequelize, DataTypes) {
 	});
 
 	Job.hasMany(require('./job_meta')(sequelize, DataTypes));
+	Job.hasMany(require('./job_log')(sequelize, DataTypes));
 
 	return Job;
 };

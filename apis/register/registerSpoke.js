@@ -22,7 +22,6 @@ exports.spec = {
 	parameters: [
 		param('hostname', 'The hostname of the spoke.', 'string', null, true),
 		param('version', 'The spoke\'s version number.', 'string', null, true),
-		param('capabilities', 'A serialized JSON array of platform objects', 'string', null, true),
 		param('machineId', 'A token that is machine specific that is passed with each request.', 'string')
 	],
 	responseMessages: [
@@ -40,14 +39,6 @@ exports.action = function action(models) {
 		if (!body.machineId) 	throw swe.invalid('machineId');
 		if (!body.hostname)		throw swe.invalid('hostname');
 		if (!body.version)		throw swe.invalid('version');
-		if (!body.capabilities)	throw swe.invalid('capabilities');
-
-		try {
-			// make sure the 'capabilities' is valid JSON
-			JSON.parse(body.capabilities);
-		} catch (ex) {
-			res.send(400, JSON.stringify({ success: false, error: 'Invalid "capabilities" param: ' + ex.toString() }));
-		}
 
 		// check if the token is valid
 		SpokeModel.findOrCreate(
@@ -58,8 +49,7 @@ exports.action = function action(models) {
 				machineId: body.machineId,
 				ipaddress: req.connection.remoteAddress,
 				hostname: body.hostname,
-				version: body.version,
-				capabilities: body.capabilities
+				version: body.version
 			}
 		).success(function (result) {
 			res.send(201, JSON.stringify({ success: true, result: result }));
