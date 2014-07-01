@@ -47,7 +47,7 @@ exports.action = function action(models) {
 				return;
 			}
 
-			job.success = !!body.success;
+			job.state = body.success ? 2 : 3;
 			job.result = body.result || null;
 
 			job.save().success(function () {

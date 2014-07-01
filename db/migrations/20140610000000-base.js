@@ -13,7 +13,7 @@ exports.up = function(migration, DataTypes, done) {
 						autoIncrement: true
 					},
 
-					// unique identifier
+					// parent job identifier
 					parent_id: {
 						type: DataTypes.INTEGER
 					},

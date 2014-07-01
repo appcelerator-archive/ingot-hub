@@ -10,6 +10,7 @@ module.exports = function (sequelize, DataTypes) {
 			autoIncrement: true
 		},
 
+		// parent job identifier
 		parent_id: {
 			type: DataTypes.INTEGER
 		},
