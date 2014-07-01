@@ -3,6 +3,7 @@ var appc = require('node-appc'),
 	bower = require('bower'),
 	express = require('express'),
 	fs = require('fs'),
+	mkdirp = require('mkdirp'),
 	path = require('path'),
 	Sequelize = require('sequelize'),
 	sequelize,
@@ -35,6 +36,9 @@ exports.load = function load(deps, cfg, callback) {
 						db.storage = '~/.appcelerator/ingot-hub.sqlite';
 					}
 					db.storage = appc.fs.resolvePath(db.storage);
+					if (!fs.existsSync(db.storage)) {
+						mkdirp.sync(path.dirname(db.storage));
+					}
 					break;
 
 				default: // mariadb, mysql, postgres
