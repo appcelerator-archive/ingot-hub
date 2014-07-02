@@ -7,7 +7,8 @@ var appc = require('node-appc'),
 	path = require('path'),
 	Sequelize = require('sequelize'),
 	sequelize,
-	swagger = require('swagger-node-express');
+	swagger = require('swagger-node-express'),
+	logger = function () {};
 
 /**
  * Dependent services that must load before we're loaded
@@ -21,6 +22,10 @@ exports.dependencies = [ 'ingot-web-server' ];
  */
 exports.load = function load(deps, cfg, callback) {
 	cfg || (cfg = {});
+	if (cfg.logger) {
+		cfg.logger.addLevel('hub', 'cyan');
+		logger = cfg.logger.hub;
+	}
 
 	async.parallel({
 		db: function (next) {
@@ -48,14 +53,13 @@ exports.load = function load(deps, cfg, callback) {
 					db.password || (db.password = null);
 			}
 
-			function logger() {
-				var args = ['hub: sequelize:'].concat(Array.prototype.slice.call(arguments));
-				console.info.apply(null, args);
-			}
-			db.logging = logger;
+			db.logging = function () {
+				var args = ['sequelize:'].concat(Array.prototype.slice.call(arguments));
+				logger.apply(null, args);
+			};
 
 			// connect to the database
-			console.info('hub: connecting to %s (%s)', db.dialect, db.dialect === 'sqlite' ? db.storage : (db.host + ':' + db.port));
+			logger('connecting to %s (%s)', db.dialect, db.dialect === 'sqlite' ? db.storage : (db.host + ':' + db.port));
 			sequelize = new Sequelize('ingot-hub', db.username, db.password, db);
 
 			// initialize the database
@@ -68,7 +72,7 @@ exports.load = function load(deps, cfg, callback) {
 		},
 
 		bower: function (next) {
-			console.info('hub: installing bower components');
+			logger('installing bower components');
 			bower.commands.install([], {}, {
 				cwd: __dirname,
 				directory: 'public/lib'
@@ -85,7 +89,7 @@ exports.load = function load(deps, cfg, callback) {
 exports.start = function start(deps, cfg) {
 	cfg || (cfg = {});
 
-	console.info('hub: initializing routes');
+	logger('hub: initializing routes');
 	var apirouter = express.Router();
 	swagger.setAppHandler(apirouter);
 
